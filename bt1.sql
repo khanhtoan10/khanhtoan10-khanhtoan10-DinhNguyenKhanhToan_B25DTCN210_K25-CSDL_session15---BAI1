@@ -188,26 +188,18 @@ CREATE PROCEDURE PayHospitalFee(
     IN p_amount DECIMAL(18,2)
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        ROLLBACK;
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Transaction Failed - Rolled Back';
-    END;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION ROLLBACK;
 
     START TRANSACTION;
-
         UPDATE Wallets 
-        SET balance = balance - p_amount 
-        WHERE patient_id = p_patient_id;
+        SET balance = balance - p_amt 
+        WHERE patient_id = p_id;
 
         UPDATE Patient_Invoices 
-        SET total_due = total_due - p_amount,
+        SET total_due = total_due - p_amt, 
             last_updated = NOW()
-        WHERE patient_id = p_patient_id;
-
+        WHERE patient_id = p_id;
     COMMIT;
-    
-    SELECT 'Success' AS Status;
 END //
 
 DELIMITER ;
